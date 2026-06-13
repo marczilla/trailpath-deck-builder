@@ -5,7 +5,7 @@
    ANTHROPIC_API_KEY.
    Runtime: Netlify Functions (Node 18+, global fetch available).
    ===================================================================== */
-const DEFAULT_MODEL = "claude-sonnet-4-6";
+const DEFAULT_MODEL = "claude-haiku-4-5";
 
 const SYSTEM_PROMPT =
   "You localize coaching/training-deck copy for a specific client. You will " +
@@ -45,7 +45,7 @@ exports.handler = async (event) => {
       },
       body: JSON.stringify({
         model,
-        max_tokens: 4096,
+        max_tokens: 2048,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: user }],
       }),
