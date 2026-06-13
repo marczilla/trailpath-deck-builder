@@ -157,9 +157,27 @@
     .pslide{width:100vw;height:100vh;page-break-after:always;container-type:size;background:var(--cream);position:relative;overflow:hidden}
   }
   #printRoot{display:none}
+  #gate{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:99999}
+  #gate .card{background:#fff;border-radius:14px;padding:30px 28px;width:330px;box-shadow:0 20px 60px rgba(0,0,0,.4);text-align:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  #gate .dot{width:14px;height:14px;border-radius:3px;background:var(--moss);margin:0 auto 12px}
+  #gate h2{margin:0 0 4px;color:var(--navy);font-size:19px}
+  #gate p{margin:0 0 16px;color:var(--mute);font-size:12.5px}
+  #gate input{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:14px;margin-bottom:10px}
+  #gate button{width:100%;padding:10px;border:none;border-radius:8px;background:var(--moss);color:#fff;font-weight:700;font-size:14px;cursor:pointer}
+  #gate button:disabled{opacity:.6}
+  #gate .err{color:#C2503F;font-size:12px;min-height:16px;margin-top:8px}
+  body.locked{overflow:hidden}
 </style>
 </head>
 <body>
+<div id="gate"><div class="card">
+  <div class="dot"></div>
+  <h2>TrailPath Deck Builder</h2>
+  <p>Enter the access password to continue.</p>
+  <input type="password" id="gatePw" placeholder="Password" autofocus />
+  <button id="gateGo">Enter</button>
+  <div class="err" id="gateErr"></div>
+</div></div>
 <div class="app">
   <aside class="side">
     <div class="brand"><span class="dot"></span><h1>Coaching Deck Builder</h1></div>
@@ -591,7 +609,7 @@ async function runAIRewrite(){
   try{
     const res=await fetch("/.netlify/functions/rewrite",{
       method:"POST", headers:{"content-type":"application/json"},
-      body:JSON.stringify({ ctx:{client:ctx.client,industry:ctx.industry,project:ctx.project,audience:ctx.audience}, content:editable, model:aiModel })
+      body:JSON.stringify({ ctx:{client:ctx.client,industry:ctx.industry,project:ctx.project,audience:ctx.audience}, content:editable, model:aiModel, password:(sessionStorage.getItem("tp_sitepw")||"") })
     });
     const data=await res.json().catch(()=>null);
     if(!res.ok){ throw new Error((data&&data.error)||("HTTP "+res.status)); }
@@ -675,6 +693,21 @@ function wireTips(){
 
 /* boot */
 loadState(); initInputs(); wire(); wireTips(); refresh();
+/* password gate (verified server-side by the function) */
+(function(){
+  const gate=document.getElementById("gate"); if(!gate) return;
+  document.body.classList.add("locked");
+  const pw=document.getElementById("gatePw"), go=document.getElementById("gateGo"), err=document.getElementById("gateErr");
+  function unlock(){ gate.style.display="none"; document.body.classList.remove("locked"); }
+  if(sessionStorage.getItem("tp_sitepw")) unlock();
+  async function tryPw(){ const v=pw.value; if(!v) return; go.disabled=true; err.textContent="Checking…";
+    try{ const r=await fetch("/.netlify/functions/rewrite",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({auth:true,password:v})});
+      if(r.ok){ sessionStorage.setItem("tp_sitepw",v); err.textContent=""; unlock(); }
+      else if(r.status===401){ err.textContent="Incorrect password."; }
+      else { err.textContent="Server error — try again."; }
+    }catch(e){ err.textContent="Network error."; } go.disabled=false; }
+  go.onclick=tryPw; pw.addEventListener("keydown",e=>{ if(e.key==="Enter") tryPw(); });
+})();
 </script>
 </body>
 </html>
