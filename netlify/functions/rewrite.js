@@ -6,6 +6,7 @@
    Runtime: Netlify Functions (Node 18+, global fetch available).
    ===================================================================== */
 const DEFAULT_MODEL = "claude-haiku-4-5";
+const SITE_PASSWORD = process.env.SITE_PASSWORD || "";
 
 const SYSTEM_PROMPT =
   "You localize coaching/training-deck copy for a specific client. You will " +
@@ -26,6 +27,9 @@ exports.handler = async (event) => {
   let body;
   try { body = JSON.parse(event.body || "{}"); }
   catch { return resp(400, { error: "Invalid JSON body" }); }
+
+  if (SITE_PASSWORD && body.password !== SITE_PASSWORD) return resp(401, { error: "Unauthorized" });
+  if (body.auth) return resp(200, { ok: true });
 
   const ctx = body.ctx || {};
   const content = body.content || {};
