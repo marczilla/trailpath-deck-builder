@@ -41,7 +41,7 @@
   .btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:7px 10px;font-size:12px;cursor:pointer;color:var(--ink);font-weight:600}
   .btn:hover{border-color:var(--moss)}
   .btn.sm{padding:5px 8px;font-size:11px}
-  .uploadbox{border:1.5px dashed var(--moss2);border-radius:9px;padding:11px;background:#f6faf2;text-align:center;cursor:pointer}
+  .uploadbox{display:block;border:1.5px dashed var(--moss2);border-radius:9px;padding:11px;background:#f6faf2;text-align:center;cursor:pointer}
   .uploadbox:hover{background:#eef6e7}
   .uploadbox .big{font-size:12.5px;font-weight:700;color:var(--moss)}
   .uploadbox .sm{font-size:10.5px;color:var(--mute);margin-top:2px}
@@ -349,7 +349,7 @@ let ctx={...DEFAULT_CTX};
 let content=clone(DEFAULT_CONTENT);
 let modState={}; MODULES.forEach(m=>modState[m.id]=m.on);
 let idx=0, deck=[];
-let aiKey="", aiModel="claude-sonnet-4-6";
+let aiKey="", aiModel="claude-haiku-4-5";
 
 function clone(o){return JSON.parse(JSON.stringify(o));}
 function deepMerge(base,extra){ if(Array.isArray(extra)||typeof extra!=="object"||extra===null) return clone(extra);
@@ -585,10 +585,9 @@ async function importPptx(file){
 async function runAIRewrite(){
   const btn=document.getElementById("aiRun"); const old=btn.textContent;
   btn.disabled=true; btn.textContent="✨ Rewriting…";
-  const editable={ deckTitle:content.deckTitle, deckSubtitle:content.deckSubtitle,
-    objectives:content.objectives, why:content.why, listening:content.listening, steps:content.steps,
-    difficult:content.difficult, signals:content.signals, recognition:content.recognition,
-    scenario:content.scenario, scenarios:content.scenarios, closing:content.closing };
+  const editable={ objectives:content.objectives, why:content.why, listening:content.listening,
+    difficult:content.difficult, recognition:content.recognition,
+    scenario:content.scenario, scenarios:content.scenarios };
   try{
     const res=await fetch("/.netlify/functions/rewrite",{
       method:"POST", headers:{"content-type":"application/json"},
