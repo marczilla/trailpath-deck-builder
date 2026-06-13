@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TrailPath Coaching Deck Builder</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --navy:#1E2D45; --navy2:#2A3F60; --cream:#F3F0E7; --moss:#5E8C4A; --moss2:#7BA05B;
+    --ink:#2B3442; --mute:#6B7280; --line:#E2DED3; --bg:#EFEDE6; --white:#fff; --red:#C2503F; --amber:#C98A2B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  .app{display:grid;grid-template-columns:390px 1fr;height:100vh}
+  .side{background:var(--white);border-right:1px solid var(--line);overflow-y:auto;padding:18px 18px 60px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .brand .dot{width:12px;height:12px;border-radius:3px;background:var(--moss)}
+  .brand h1{font-size:16px;margin:0;color:var(--navy);letter-spacing:.2px}
+  .sub{font-size:11.5px;color:var(--mute);margin:0 0 16px}
+  .group{margin-bottom:18px}
+  .group h2{font-size:11px;text-transform:uppercase;letter-spacing:1.3px;color:var(--moss);margin:0 0 8px;font-weight:700;display:flex;align-items:center}
+  label.f{display:flex;align-items:center;font-size:11.5px;color:var(--mute);margin:8px 0 3px;font-weight:600}
+  input[type=text],input[type=password],select,textarea{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:7px;font-size:13px;font-family:inherit;color:var(--ink);background:#fcfbf8}
+  textarea{resize:vertical;line-height:1.45}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--moss)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mod{display:flex;align-items:flex-start;gap:9px;padding:9px;border:1px solid var(--line);border-radius:8px;margin-bottom:7px;background:#fcfbf8;cursor:pointer;transition:.12s}
+  .mod:hover{border-color:var(--moss2)}
+  .mod input{margin-top:2px}
+  .mod .t{font-size:13px;font-weight:600;color:var(--navy)}
+  .mod .d{font-size:11px;color:var(--mute);margin-top:1px}
+  .mod.imp{border-color:var(--moss2);background:#f1f6ec}
+  details.adv{margin-top:8px;border:1px dashed var(--line);border-radius:8px;padding:9px 11px;background:#fbfaf6}
+  details.adv summary{font-size:12px;font-weight:600;color:var(--navy);cursor:pointer}
+  .steps-help{font-size:11.5px;color:var(--ink);line-height:1.5;margin:8px 0 0;padding-left:18px}
+  .steps-help li{margin-bottom:4px}
+  .mini{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:7px 10px;font-size:12px;cursor:pointer;color:var(--ink);font-weight:600}
+  .btn:hover{border-color:var(--moss)}
+  .btn.sm{padding:5px 8px;font-size:11px}
+  .uploadbox{border:1.5px dashed var(--moss2);border-radius:9px;padding:11px;background:#f6faf2;text-align:center;cursor:pointer}
+  .uploadbox:hover{background:#eef6e7}
+  .uploadbox .big{font-size:12.5px;font-weight:700;color:var(--moss)}
+  .uploadbox .sm{font-size:10.5px;color:var(--mute);margin-top:2px}
+  .aibtn{width:100%;margin-top:10px;border:none;background:var(--moss);color:#fff;border-radius:8px;padding:10px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .aibtn:hover{background:#527d40}
+  .aibtn:disabled{opacity:.55;cursor:not-allowed}
+  .hint{font-size:10.5px;color:var(--mute);margin-top:6px;line-height:1.45}
+  .hint code{background:#eee;padding:1px 4px;border-radius:4px;font-size:10px}
+  .keyrow{display:flex;gap:6px}
+  .keyrow input{flex:1}
+  .badge{font-size:9.5px;background:#eef6e7;color:var(--moss);border:1px solid var(--moss2);border-radius:20px;padding:2px 7px;font-weight:700;margin-left:6px}
+  /* help icon */
+  .help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;min-width:15px;border-radius:50%;background:var(--line);color:var(--mute);font-size:10px;font-weight:800;cursor:help;margin-left:6px;font-style:normal}
+  .help::before{content:"?"}
+  .help:hover{background:var(--moss);color:#fff}
+  #tipbox{position:fixed;z-index:9999;max-width:230px;background:var(--navy);color:#fff;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.45;box-shadow:0 8px 24px rgba(0,0,0,.28);pointer-events:none;opacity:0;transition:opacity .12s}
+  #tipbox.show{opacity:1}
+  #tipbox code{background:rgba(255,255,255,.16);padding:1px 4px;border-radius:4px}
+  /* main */
+  .main{display:flex;flex-direction:column;min-width:0}
+  .bar{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--white);border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .bar .title{font-weight:700;color:var(--navy);font-size:14px;margin-right:auto;display:flex;align-items:center}
+  .bar .ct{font-size:12px;color:var(--mute)}
+  .primary{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer}
+  .primary:hover{background:var(--navy2)}
+  .ghost{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  .ghost:hover{border-color:var(--moss)}
+  .stage{flex:1;overflow:auto;padding:26px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .canvaswrap{width:100%;max-width:920px}
+  .slide-canvas{width:100%;aspect-ratio:16/9;container-type:size;background:var(--cream);border-radius:10px;overflow:hidden;box-shadow:0 8px 30px rgba(20,30,50,.16);position:relative}
+  .nav{display:flex;align-items:center;gap:14px;justify-content:center}
+  .nav button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:16px;cursor:pointer}
+  .nav button:hover{border-color:var(--moss)}
+  .nav .pos{font-size:13px;color:var(--mute);min-width:84px;text-align:center}
+  .thumbs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:920px}
+  .thumb{font-size:11px;padding:5px 9px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--mute)}
+  .thumb.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  /* slide internals (cqw) */
+  .s{position:absolute;inset:0;font-size:1cqw}
+  .s .band{position:absolute;left:0;top:0;width:1.8%;height:100%;background:var(--moss)}
+  .s .kick{position:absolute;left:7%;top:13%;color:var(--moss);font-weight:700;letter-spacing:.22em;font-size:1.15em}
+  .s h3{position:absolute;left:7%;font-family:Georgia,serif;color:var(--navy);margin:0;font-weight:700}
+  .s.dark{background:var(--navy)}
+  .s.dark h3,.s.dark .big{color:#fff}
+  .tag{position:absolute;right:5%;top:6%;background:var(--moss);color:#fff;font-size:.95em;font-weight:700;letter-spacing:.12em;padding:.5em .8em;border-radius:.4em}
+  .title h3{top:27%;font-size:7.3em;line-height:1.04}
+  .title .stitle{position:absolute;left:7%;top:46%;font-family:Georgia,serif;font-style:italic;color:var(--cream);font-size:3.7em}
+  .title .meta{position:absolute;left:7%;top:80%;color:#9DB0CC;font-size:1.9em}
+  .title .metab{position:absolute;left:7%;top:62%;color:var(--cream);font-size:2.3em}
+  .ct-h h3{top:7%;font-size:5em}
+  .ct-h .intro{position:absolute;left:7%;top:20%;color:var(--mute);font-style:italic;font-size:2.1em;width:52%}
+  .body{position:absolute;left:7%;top:33%;width:50%;color:var(--ink);font-size:2.15em;line-height:1.42}
+  .body p{margin:0 0 .6em}
+  .statcards{position:absolute;right:5%;top:25%;width:38%;display:flex;flex-direction:column;gap:3.5%}
+  .statcard{background:#fff;border:1px solid var(--line);border-radius:.4em;padding:1.1em 1.2em;display:flex;align-items:center;gap:1em;box-shadow:0 .3em 1em rgba(20,30,50,.08);position:relative;overflow:hidden}
+  .statcard .accent{position:absolute;left:0;top:0;width:3%;height:100%;background:var(--moss)}
+  .statcard .v{font-family:Georgia,serif;font-weight:700;color:var(--navy);font-size:3.6em}
+  .statcard .l{color:var(--mute);font-size:1.55em;line-height:1.2}
+  .note{position:absolute;left:7%;top:84%;color:var(--moss);font-style:italic;font-size:1.7em}
+  .cards{position:absolute;left:7%;top:30%;right:5%;display:flex;gap:2.2%}
+  .card{flex:1;background:#fff;border:1px solid var(--line);border-radius:.4em;padding:1.4em 1em;text-align:center;box-shadow:0 .3em 1em rgba(20,30,50,.08);position:relative}
+  .card .top{position:absolute;left:0;top:0;width:100%;height:4%;background:var(--moss)}
+  .card .circ{width:3.4em;height:3.4em;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;margin:.3em auto .6em;font-size:1.9em;font-weight:700;font-family:Georgia,serif}
+  .card .st{color:var(--moss);font-weight:700;letter-spacing:.16em;font-size:1.15em}
+  .card .nm{font-family:Georgia,serif;color:var(--navy);font-weight:700;font-size:2.4em;margin:.15em 0 .35em}
+  .card .dd{color:var(--mute);font-size:1.55em;line-height:1.32}
+  .tip{position:absolute;left:7%;right:5%;top:88%;text-align:center;color:var(--moss);font-style:italic;font-size:1.7em}
+  .stages{position:absolute;left:7%;right:5%;top:32%;display:flex;gap:2%}
+  .stagecol{flex:1;border-radius:.4em;overflow:hidden;border:1px solid var(--line);background:#fff}
+  .stagecol .hd{padding:.7em;color:#fff;font-weight:700;font-size:2em;text-align:center;font-family:Georgia,serif}
+  .stagecol .bd{padding:.9em;color:var(--ink);font-size:1.5em;line-height:1.34}
+  .scen{position:absolute;left:7%;top:30%;width:42%;background:var(--navy);border-radius:.4em;padding:1.4em;box-shadow:0 .4em 1.2em rgba(20,30,50,.18)}
+  .scen .lab{color:var(--moss);font-weight:700;letter-spacing:.18em;font-size:1.25em;margin-bottom:.6em}
+  .scen .txt{color:var(--cream);font-size:1.85em;line-height:1.45}
+  .qs{position:absolute;right:5%;top:30%;width:40%}
+  .qs .qh{color:var(--navy);font-weight:700;font-size:2.15em;margin-bottom:.5em}
+  .qs ul{margin:0;padding-left:1.1em}
+  .qs li{color:var(--ink);font-size:1.8em;line-height:1.34;margin-bottom:.6em}
+  /* bullets */
+  .blist{position:absolute;left:7%;top:31%;width:84%;margin:0;padding-left:1.1em}
+  .blist li{color:var(--ink);font-size:2.25em;line-height:1.4;margin-bottom:.55em}
+  .blist li::marker{color:var(--moss)}
+  /* points grid */
+  .pointgrid{position:absolute;left:7%;right:5%;top:29%;display:grid;grid-template-columns:1fr 1fr;gap:3% 3%}
+  .pcard{background:#fff;border:1px solid var(--line);border-radius:.4em;padding:1.1em 1.2em;box-shadow:0 .25em .9em rgba(20,30,50,.07);border-left:.35em solid var(--moss)}
+  .pcard .pt{font-family:Georgia,serif;color:var(--navy);font-weight:700;font-size:2.1em;margin-bottom:.2em}
+  .pcard .pd{color:var(--mute);font-size:1.55em;line-height:1.32}
+  /* two column */
+  .twocol{position:absolute;left:7%;right:5%;top:30%;display:flex;gap:3%}
+  .tcard{flex:1;background:#fff;border:1px solid var(--line);border-radius:.4em;overflow:hidden;box-shadow:0 .25em .9em rgba(20,30,50,.07)}
+  .tcard .th{padding:.6em;color:#fff;font-weight:700;font-size:2.1em;text-align:center;font-family:Georgia,serif}
+  .tcard ul{margin:0;padding:.9em 1em .9em 2em}
+  .tcard li{color:var(--ink);font-size:1.65em;line-height:1.34;margin-bottom:.45em}
+  /* closing */
+  .closing .big{position:absolute;left:7%;top:14%;font-family:Georgia,serif;font-weight:700;font-size:5.4em;width:86%;line-height:1.05}
+  .closing .ssub{position:absolute;left:7%;top:32%;font-family:Georgia,serif;font-style:italic;color:var(--cream);font-size:2.7em;width:80%}
+  .ccards{position:absolute;left:7%;right:5%;top:46%;display:flex;gap:3%}
+  .ccard{flex:1;background:var(--navy2);border-radius:.4em;padding:1.2em 1.3em}
+  .ccard .lab{color:var(--moss);font-weight:700;letter-spacing:.16em;font-size:1.25em;margin-bottom:.6em}
+  .ccard ul{margin:0;padding-left:1.1em}
+  .ccard li{color:var(--cream);font-size:1.6em;line-height:1.3;margin-bottom:.35em}
+  .ccard .pbig{font-family:Georgia,serif;color:#fff;font-weight:700;font-size:3.8em;margin:.1em 0}
+  .ccard .psm{font-family:Georgia,serif;font-style:italic;color:var(--cream);font-size:2em}
+  .ccard .pnote{color:#C2CFE3;font-size:1.4em;margin-top:.5em;line-height:1.3}
+  .closing .foot{position:absolute;left:7%;right:5%;bottom:4%;text-align:center;color:#C2CFE3;font-size:1.45em}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 18px;border-radius:9px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:80vw;text-align:center}
+  .toast.show{opacity:1}
+  @media print{
+    @page{size:landscape;margin:0}
+    .side,.bar,.nav,.thumbs{display:none!important}
+    .app{display:block}.stage{padding:0;display:block}.canvaswrap{max-width:none}
+    #printRoot{display:block}.slide-canvas{display:none}
+    .pslide{width:100vw;height:100vh;page-break-after:always;container-type:size;background:var(--cream);position:relative;overflow:hidden}
+  }
+  #printRoot{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><span class="dot"></span><h1>Coaching Deck Builder</h1></div>
+    <p class="sub">Standardize one coaching deck, then re-skin it per client, project, or supervisor in seconds. Built for TrailPath · NxtPath™.</p>
+
+    <div class="group">
+      <h2>This deck is for…<i class="help" data-tip="These values flow into every slide. Type once here and the whole deck updates — title, scenario, footer, everything."></i></h2>
+      <label class="f">Client / Organization<i class="help" data-tip="The customer this deck is built for. Appears on the title slide and in the practice scenario."></i></label>
+      <input type="text" id="v_client" />
+      <label class="f">Industry<i class="help" data-tip="Drives the practice scenario. Switching this automatically rewrites the example to fit the industry (warehouse, healthcare, retail, etc.)."></i></label>
+      <select id="v_industry"></select>
+      <div class="row2">
+        <div><label class="f">Project / Engagement<i class="help" data-tip="The name of this rollout or engagement. Shown on the closing summary slide."></i></label><input type="text" id="v_project" /></div>
+        <div><label class="f">Supervisor / Audience<i class="help" data-tip="Who is in the room — e.g. ‘Frontline Supervisors’. Appears on the title slide."></i></label><input type="text" id="v_audience" /></div>
+      </div>
+      <div class="row2">
+        <div><label class="f">Session length<i class="help" data-tip="Shown on the title slide so attendees know the time commitment."></i></label><input type="text" id="v_length" /></div>
+        <div><label class="f">Facilitator<i class="help" data-tip="The person leading the session. Leave the bracket if unknown."></i></label><input type="text" id="v_facilitator" /></div>
+      </div>
+      <label class="f">Date<i class="help" data-tip="Session date. Free text — any format you like."></i></label>
+      <input type="text" id="v_date" />
+    </div>
+
+    <div class="group">
+      <h2>Modules<i class="help" data-tip="Tick the topics to include and they appear in the preview instantly, in this order. Title and closing slides are always added automatically."></i></h2>
+      <div id="modList"></div>
+    </div>
+
+    <div class="group">
+      <h2>Import Ben's deck<i class="help" data-tip="Upload an existing .pptx and the tool extracts the text from each slide, then re-renders it inside the TrailPath template — a fast way to standardize old material."></i></h2>
+      <label class="uploadbox" for="pptxUp">
+        <div class="big">⬆ Upload a .pptx template</div>
+        <div class="sm">We pull the text from each slide into a new “Imported” module</div>
+      </label>
+      <input type="file" id="pptxUp" accept=".pptx" style="display:none" />
+      <p class="hint">Text only — images, colors, and layout are replaced with the TrailPath look. Original file is never uploaded anywhere; it’s read in your browser.</p>
+    </div>
+
+    <div class="group">
+      <h2>AI rewrite<span class="badge">LIVE</span><i class="help" data-tip="Uses Claude to rewrite every example and scenario in the client's industry and voice. The API key is held securely on the server — your team just clicks."></i></h2>
+      <button class="aibtn" id="aiRun">✨ Rewrite examples for this client</button>
+      <p class="hint">Rewrites scenarios and examples to fit <b id="aiClientName">the client</b> + industry, keeping the structure and <code>{{placeholders}}</code> intact. Powered by a secure server function — no key needed here.</p>
+    </div>
+
+    <div class="group">
+      <h2>Content library<i class="help" data-tip="The underlying copy for every slide. Edit it here, or paste in Ben's real material as JSON. Saved in this browser."></i></h2>
+      <details class="adv">
+        <summary>How to add Ben's material (JSON)</summary>
+        <ol class="steps-help">
+          <li>Click <b>Export .json</b> below to download the current structure.</li>
+          <li>Open it in any text editor. Replace the text <i>values</i> with Ben's content.</li>
+          <li>Keep the <b>keys</b> and any <code>{{placeholders}}</code> exactly as they are.</li>
+          <li>Paste the whole thing into the box and click <b>Apply</b>.</li>
+          <li>Prefer not to touch JSON? Just <b>upload his .pptx</b> above instead.</li>
+        </ol>
+        <textarea id="contentJson" rows="9" style="margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:11px"></textarea>
+        <div class="mini">
+          <button class="btn sm" id="applyJson">Apply</button>
+          <button class="btn sm" id="exportJson">Export .json</button>
+          <button class="btn sm" id="resetJson">Reset to sample</button>
+        </div>
+      </details>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="bar">
+      <span class="title">Live preview<i class="help" data-tip="Use ← and → keys to flip slides. Everything here is exactly what exports to PowerPoint and PDF."></i></span>
+      <span class="ct" id="counter"></span>
+      <button class="ghost" id="btnPrint">🖨 Print / Save PDF<i class="help" data-tip="Opens the print dialog laid out one slide per landscape page. Choose ‘Save as PDF’ as the destination."></i></button>
+      <button class="primary" id="btnPptx">⬇ Download PowerPoint<i class="help" data-tip="Generates a real, editable .pptx you can open and tweak in PowerPoint or Google Slides."></i></button>
+    </div>
+    <div class="stage">
+      <div class="canvaswrap"><div class="slide-canvas" id="canvas"></div></div>
+      <div class="nav">
+        <button id="prev">‹</button><span class="pos" id="pos">1 / 1</span><button id="next">›</button>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+    </div>
+  </div>
+</div>
+<div id="printRoot"></div>
+<div id="tipbox"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   TrailPath Coaching Deck Builder — single-file, static, Netlify-ready
+   ctx (variables) + content (library) -> buildDeck() -> slide models ->
+   renderHTML() (preview/print) and exportPPTX() (PptxGenJS).
+   ===================================================================== */
+const PALETTE={navy:"1E2D45",navy2:"2A3F60",cream:"F3F0E7",moss:"5E8C4A",ink:"2B3442",
+  mute:"6B7280",white:"FFFFFF",line:"E2DED3",red:"C2503F",amber:"C98A2B"};
+
+const DEFAULT_CTX={ client:"Summit Logistics", industry:"Transportation / Warehousing",
+  project:"Frontline Leadership Rollout", audience:"Frontline Supervisors",
+  length:"60 minutes", facilitator:"[Facilitator]", date:"[Date]" };
+
+const DEFAULT_CONTENT={
+  deckTitle:"Leadership Essentials",
+  deckSubtitle:"Effective Check-In Conversations",
+  series:"NXTPATH™ TRAINING SERIES",
+  objectives:{ title:"What We’ll Cover Today",
+    intro:"A practical hour you can use on your next shift.",
+    bullets:[
+      "Why a 10-minute check-in is your highest-leverage habit",
+      "A repeatable 4-step conversation structure",
+      "Reading the NxtPath™ signal: declining → thriving",
+      "Practice on a real {{industry}} scenario",
+      "Leave with one commitment for this week" ] },
+  why:{ title:"Why Check-Ins Matter",
+    intro:"Small, consistent conversations are the strongest predictor of retention.",
+    paras:[
+      "Most people don’t leave companies — they leave silence. By the time a resignation lands, the warning signs have usually been visible for weeks.",
+      "A 10-minute structured check-in lets a supervisor spot a “declining” signal early and act before a small problem becomes a departure." ],
+    stats:[{v:"50%",l:"reduction in turnover"},{v:"+65%",l:"team thrive score"},{v:"7.6×",l:"return on investment"}],
+    note:"Teams using NxtPath™ check-ins see results in the first quarter." },
+  listening:{ title:"Listen Like It Matters",
+    intro:"Most supervisors talk too much in check-ins. These four habits flip that.",
+    points:[
+      {t:"Ask, then wait",d:"Pose one open question and let the silence do the work. Don’t rescue it."},
+      {t:"Reflect back",d:"“So what I’m hearing is…” — proves you listened and catches misreads."},
+      {t:"Stay curious",d:"Trade ‘why did you’ for ‘help me understand’. Curiosity lowers defenses."},
+      {t:"Note the signal",d:"Watch energy and tone, not just words. That’s the real data point."} ] },
+  steps:{ title:"The 4-Step Check-In",
+    intro:"Ten minutes, same shape every time — consistency is what builds trust.",
+    items:[
+      {n:"1",t:"Open",d:"“How are you, really?” Listen for the signal, not just the answer."},
+      {n:"2",t:"Explore",d:"Ask about the work: what’s blocking them, what’s working."},
+      {n:"3",t:"Commit",d:"Agree one concrete action — theirs or yours — before you end."},
+      {n:"4",t:"Track",d:"Log the signal and the action in NxtPath™ so nothing gets lost."} ],
+    tip:"Tip: book check-ins as a recurring block — cadence beats intensity." },
+  difficult:{ title:"Difficult Conversations",
+    intro:"When the topic is hard, structure protects the relationship.",
+    leftTitle:"Do", leftColor:"5E8C4A",
+    left:["Lead with the specific behavior, not the person","Use facts and the NxtPath™ signal, not labels","Ask for their view before you give yours","End with a clear, shared next step"],
+    rightTitle:"Avoid", rightColor:"C2503F",
+    right:["“You always / you never” generalizations","Saving it all up for the annual review","Talking more than half the time","Leaving with no agreement or follow-up"] },
+  signals:{ title:"Reading the Signals",
+    intro:"NxtPath™ gives every person a simple way to say where they stand. Learn to read it.",
+    stages:[
+      {name:"Declining",desc:"Pulling back, missing huddles, errors up. Act this week.",color:"C2503F"},
+      {name:"Surviving",desc:"Showing up but running on empty. Needs support soon.",color:"C98A2B"},
+      {name:"Growing",desc:"Engaged and improving. Feed it with stretch + feedback.",color:"7BA05B"},
+      {name:"Thriving",desc:"At their best. Protect it; ask them to lift others.",color:"4F7A3A"} ],
+    note:"The goal isn’t all-thriving — it’s catching the slide from one stage to the next early." },
+  recognition:{ title:"Recognition That Lands",
+    intro:"Recognition is the cheapest retention tool you have — when it’s specific.",
+    points:[
+      {t:"Be specific",d:"Name the exact action and its impact, not just “good job”."},
+      {t:"Be timely",d:"Within a day or two. Stale praise feels like an afterthought."},
+      {t:"Match the person",d:"Some want public, some private. Know which is which."},
+      {t:"Tie it to the work",d:"Connect it to the team’s goal so it reinforces what matters."} ] },
+  scenario:{ title:"Practice Scenario", questionsTitle:"In pairs — 10 minutes:",
+    questions:[
+      "How would you open the conversation?",
+      "What might be behind the change — and what shouldn’t you assume?",
+      "What’s one commitment you could each walk away with?",
+      "What do you log in NxtPath™, and when do you follow up?" ] },
+  scenarios:{
+    "Transportation / Warehousing":"{{name}} is a dock supervisor on the night shift. Reliable for two years, but this month they’ve called off twice, stopped joining the pre-shift huddle, and hand-off errors are up. Their NxtPath™ signal moved from “steady” to “declining” this week.",
+    "Manufacturing":"{{name}} runs a line station and has hit every quality target for a year. Lately they’ve gone quiet in shift meetings, skipped two safety stand-downs, and their NxtPath™ signal slipped to “surviving.”",
+    "Healthcare":"{{name}} is a charge nurse known for steadying the floor. After a rough stretch of short-staffed shifts they’ve grown short with colleagues and their NxtPath™ signal dropped to “declining.”",
+    "Retail":"{{name}} is a shift lead who used to coach new hires eagerly. Lately they clock in late, avoid the team huddle, and their NxtPath™ signal moved to “surviving.”",
+    "Hospitality":"{{name}} is a front-desk supervisor with great guest scores. This month they’ve seemed checked out, declined two extra shifts they’d normally grab, and their NxtPath™ signal slid to “declining.”",
+    "Custom":"{{name}} is an experienced team member whose engagement has quietly dropped over the past month. Their NxtPath™ signal moved from “steady” to “declining,” and a few small signs are starting to show." },
+  scenarioName:"Maria",
+  closing:{ big:"This deck was a first draft —", sub:"generated from a content library plus a few quick inputs.",
+    payoffBig:"Minutes,", payoffSub:"not hours per deck.",
+    payoffNote:"Every deck on-brand, every example written for that client." }
+};
+
+/* module registry — order here = slide order. title + closing are implicit. */
+const MODULES=[
+  {id:"objectives",title:"Session Objectives",desc:"Agenda for the hour",type:"bullets",on:true},
+  {id:"why",title:"Why Check-Ins Matter",desc:"Stats + the case for cadence",type:"stat",on:true},
+  {id:"listening",title:"Listen Like It Matters",desc:"4 listening habits",type:"points",on:false},
+  {id:"steps",title:"The 4-Step Check-In",desc:"The core framework",type:"steps",on:true},
+  {id:"difficult",title:"Difficult Conversations",desc:"Do / Avoid",type:"twocol",on:false},
+  {id:"signals",title:"Reading the Signals",desc:"Declining → Thriving model",type:"signals",on:true},
+  {id:"recognition",title:"Recognition That Lands",desc:"4 recognition habits",type:"points",on:false},
+  {id:"scenario",title:"Practice Scenario",desc:"Auto-tailored to the industry",type:"scenario",on:true},
+  {id:"imported",title:"Imported slides",desc:"From the .pptx you upload",type:"imported",on:false,hidden:true}
+];
+
+let ctx={...DEFAULT_CTX};
+let content=clone(DEFAULT_CONTENT);
+let modState={}; MODULES.forEach(m=>modState[m.id]=m.on);
+let idx=0, deck=[];
+let aiKey="", aiModel="claude-sonnet-4-6";
+
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function deepMerge(base,extra){ if(Array.isArray(extra)||typeof extra!=="object"||extra===null) return clone(extra);
+  const out=clone(base||{}); for(const k in extra){ out[k]=(typeof extra[k]==="object"&&extra[k]&&!Array.isArray(extra[k])&&typeof out[k]==="object")?deepMerge(out[k],extra[k]):clone(extra[k]); } return out; }
+
+function save(){ try{ localStorage.setItem("tp_ctx",JSON.stringify(ctx));
+  localStorage.setItem("tp_content",JSON.stringify(content));
+  localStorage.setItem("tp_mods",JSON.stringify(modState));
+  localStorage.setItem("tp_ai",JSON.stringify({model:aiModel})); }catch(e){} }
+function loadState(){ try{
+  const a=localStorage.getItem("tp_ctx"); if(a)ctx={...DEFAULT_CTX,...JSON.parse(a)};
+  const b=localStorage.getItem("tp_content"); if(b)content=deepMerge(DEFAULT_CONTENT,JSON.parse(b));
+  const c=localStorage.getItem("tp_mods"); if(c)modState={...modState,...JSON.parse(c)};
+  const ai=localStorage.getItem("tp_ai"); if(ai){const o=JSON.parse(ai); if(o.model)aiModel=o.model;}
+}catch(e){} }
+
+function fill(str){ if(str==null)return"";
+  return String(str).replaceAll("{{client}}",ctx.client).replaceAll("{{industry}}",ctx.industry)
+    .replaceAll("{{project}}",ctx.project).replaceAll("{{audience}}",ctx.audience)
+    .replaceAll("{{length}}",ctx.length).replaceAll("{{facilitator}}",ctx.facilitator)
+    .replaceAll("{{date}}",ctx.date).replaceAll("{{name}}",content.scenarioName||"Maria"); }
+
+/* =====================================================================
+   BUILD DECK
+   ===================================================================== */
+function buildDeck(){
+  const d=[];
+  d.push({type:"title",
+    kicker:"TRAILPATH WORKPLACE SOLUTIONS  •  "+content.series,
+    title:content.deckTitle, subtitle:content.deckSubtitle,
+    forLine:{client:ctx.client,audience:ctx.audience,length:ctx.length},
+    meta:"Facilitator: "+ctx.facilitator+"   •   "+ctx.date, project:ctx.project});
+
+  MODULES.forEach(m=>{
+    if(!modState[m.id]) return;
+    const C=content[m.id];
+    if(m.type==="bullets" && C){ d.push({type:"bullets",title:fill(C.title),intro:fill(C.intro),bullets:(C.bullets||[]).map(fill)}); }
+    else if(m.type==="stat" && C){ d.push({type:"stat",title:fill(C.title),intro:fill(C.intro),paras:(C.paras||[]).map(fill),stats:C.stats||[],note:fill(C.note)}); }
+    else if(m.type==="points" && C){ d.push({type:"points",title:fill(C.title),intro:fill(C.intro),points:(C.points||[]).map(p=>({t:fill(p.t),d:fill(p.d)}))}); }
+    else if(m.type==="steps" && C){ d.push({type:"steps",title:fill(C.title),intro:fill(C.intro),items:(C.items||[]).map(i=>({n:i.n,t:fill(i.t),d:fill(i.d)})),tip:fill(C.tip)}); }
+    else if(m.type==="twocol" && C){ d.push({type:"twocol",title:fill(C.title),intro:fill(C.intro),
+      leftTitle:fill(C.leftTitle),left:(C.left||[]).map(fill),leftColor:C.leftColor||"5E8C4A",
+      rightTitle:fill(C.rightTitle),right:(C.right||[]).map(fill),rightColor:C.rightColor||"C2503F"}); }
+    else if(m.type==="signals" && C){ d.push({type:"signals",title:fill(C.title),intro:fill(C.intro),
+      stages:(C.stages||[]).map(s=>({name:fill(s.name),desc:fill(s.desc),color:s.color})),note:fill(C.note)}); }
+    else if(m.type==="scenario" && C){ const situ=content.scenarios[ctx.industry]||content.scenarios["Custom"];
+      d.push({type:"scenario",title:fill(C.title),
+        intro:"Tailored to your world — written for "+ctx.client+" ("+ctx.industry+").",
+        situation:fill(situ),questionsTitle:fill(C.questionsTitle),questions:(C.questions||[]).map(fill)}); }
+    else if(m.type==="imported" && Array.isArray(content.imported)){
+      content.imported.forEach(sl=>d.push({type:"bullets",title:fill(sl.title)||"Slide",intro:"",bullets:(sl.bullets||[]).map(fill)})); }
+  });
+
+  const cl=content.closing;
+  d.push({type:"closing",big:fill(cl.big),sub:fill(cl.sub),
+    inputs:["Client: "+ctx.client,"Industry: "+ctx.industry,"Project: "+ctx.project,"Audience: "+ctx.audience,"Length: "+ctx.length],
+    payoffBig:cl.payoffBig,payoffSub:cl.payoffSub,payoffNote:fill(cl.payoffNote),
+    footer:"Built with the Coaching Deck Builder  •  "+ctx.client});
+  return d;
+}
+
+/* =====================================================================
+   HTML RENDERER
+   ===================================================================== */
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function renderHTML(m){
+  if(m.type==="title")return `<div class="s dark title"><div class="band"></div><div class="tag">SAMPLE — DRAFT</div>
+    <div class="kick">${esc(m.kicker)}</div><h3>${esc(m.title)}</h3><div class="stitle">${esc(m.subtitle)}</div>
+    <div class="metab">Prepared for <b style="color:#fff">${esc(m.forLine.client)}</b> &nbsp;•&nbsp; ${esc(m.forLine.audience)} &nbsp;•&nbsp; ${esc(m.forLine.length)}</div>
+    <div class="meta">${esc(m.meta)}</div></div>`;
+  if(m.type==="bullets")return `<div class="s ct-h"><div class="band"></div><h3>${esc(m.title)}</h3>
+    ${m.intro?`<div class="intro" style="width:86%">${esc(m.intro)}</div>`:""}
+    <ul class="blist" style="top:${m.intro?31:24}%">${m.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul></div>`;
+  if(m.type==="stat")return `<div class="s ct-h"><div class="band"></div><h3>${esc(m.title)}</h3>
+    <div class="intro">${esc(m.intro)}</div><div class="body">${m.paras.map(p=>`<p>${esc(p)}</p>`).join("")}</div>
+    <div class="statcards">${m.stats.map(s=>`<div class="statcard"><div class="accent"></div><div class="v">${esc(s.v)}</div><div class="l">${esc(s.l)}</div></div>`).join("")}</div>
+    ${m.note?`<div class="note">${esc(m.note)}</div>`:""}</div>`;
+  if(m.type==="points")return `<div class="s ct-h"><div class="band"></div><h3>${esc(m.title)}</h3>
+    <div class="intro" style="width:86%">${esc(m.intro)}</div>
+    <div class="pointgrid">${m.points.map(p=>`<div class="pcard"><div class="pt">${esc(p.t)}</div><div class="pd">${esc(p.d)}</div></div>`).join("")}</div></div>`;
+  if(m.type==="steps")return `<div class="s ct-h"><div class="band"></div><h3>${esc(m.title)}</h3>
+    <div class="intro" style="width:86%">${esc(m.intro)}</div>
+    <div class="cards">${m.items.map(i=>`<div class="card"><div class="top"></div><div class="circ">${esc(i.n)}</div><div class="st">STEP ${esc(i.n)}</div><div class="nm">${esc(i.t)}</div><div class="dd">${esc(i.d)}</div></div>`).join("")}</div>
+    ${m.tip?`<div class="tip">${esc(m.tip)}</div>`:""}</div>`;
+  if(m.type==="twocol")return `<div class="s ct-h"><div class="band"></div><h3>${esc(m.title)}</h3>
+    <div class="intro" style="width:86%">${esc(m.intro)}</div>
+    <div class="twocol">
+      <div class="tcard"><div class="th" style="background:#${m.leftColor}">${esc(m.leftTitle)}</div><ul>${m.left.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="tcard"><div class="th" style="background:#${m.rightColor}">${esc(m.rightTitle)}</div><ul>${m.right.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    </div></div>`;
+  if(m.type==="signals")return `<div class="s ct-h"><div class="band"></div><h3>${esc(m.title)}</h3>
+    <div class="intro" style="width:86%">${esc(m.intro)}</div>
+    <div class="stages">${m.stages.map(s=>`<div class="stagecol"><div class="hd" style="background:#${s.color}">${esc(s.name)}</div><div class="bd">${esc(s.desc)}</div></div>`).join("")}</div>
+    ${m.note?`<div class="tip" style="color:var(--moss)">${esc(m.note)}</div>`:""}</div>`;
+  if(m.type==="scenario")return `<div class="s ct-h"><div class="band"></div><h3>${esc(m.title)}</h3>
+    <div class="intro" style="width:86%">${esc(m.intro)}</div>
+    <div class="scen"><div class="lab">THE SITUATION</div><div class="txt">${esc(m.situation)}</div></div>
+    <div class="qs"><div class="qh">${esc(m.questionsTitle)}</div><ul>${m.questions.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></div></div>`;
+  if(m.type==="closing")return `<div class="s dark closing"><div class="band"></div>
+    <div class="big">${esc(m.big)}</div><div class="ssub">${esc(m.sub)}</div>
+    <div class="ccards"><div class="ccard"><div class="lab">THE INPUTS</div><ul>${m.inputs.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>
+      <div class="ccard"><div class="lab">THE PAYOFF</div><div class="pbig">${esc(m.payoffBig)}</div><div class="psm">${esc(m.payoffSub)}</div><div class="pnote">${esc(m.payoffNote)}</div></div></div>
+    <div class="foot">${esc(m.footer)}</div></div>`;
+  return "";
+}
+
+/* =====================================================================
+   PPTX RENDERER
+   ===================================================================== */
+function exportPPTX(){
+  if(typeof PptxGenJS==="undefined"){toast("PowerPoint library still loading — try again in a second.");return;}
+  const P=PALETTE, deckM=buildDeck(), pres=new PptxGenJS();
+  pres.layout="LAYOUT_16x9"; pres.author="TrailPath Workplace Solutions"; pres.title=content.deckTitle;
+  const band=s=>s.addShape(pres.shapes.RECTANGLE,{x:0,y:0,w:0.18,h:5.625,fill:{color:P.moss}});
+  const SH=()=>({type:"outer",color:"000000",blur:8,offset:3,angle:135,opacity:0.16});
+  const head=(s,t,i)=>{ s.addText(t,{x:0.7,y:0.4,w:8.6,h:0.7,fontSize:32,bold:true,color:P.navy,fontFace:"Georgia",margin:0});
+    if(i) s.addText(i,{x:0.7,y:1.1,w:8.6,h:0.45,fontSize:14,italic:true,color:P.mute,margin:0}); };
+
+  deckM.forEach(m=>{ const s=pres.addSlide();
+    if(m.type==="title"){ s.background={color:P.navy}; band(s);
+      s.addShape(pres.shapes.RECTANGLE,{x:7.55,y:0.35,w:2.1,h:0.34,fill:{color:"4F7A3A"}});
+      s.addText("SAMPLE — DRAFT",{x:7.55,y:0.35,w:2.1,h:0.34,align:"center",valign:"middle",fontSize:8.5,bold:true,color:"FFFFFF",charSpacing:1,margin:0});
+      s.addText(m.kicker,{x:0.7,y:0.8,w:8.6,h:0.3,fontSize:11,color:P.moss,charSpacing:2,bold:true,margin:0});
+      s.addText(m.title,{x:0.7,y:1.5,w:8.6,h:0.9,fontSize:44,bold:true,color:"FFFFFF",fontFace:"Georgia",margin:0});
+      s.addText(m.subtitle,{x:0.7,y:2.42,w:8.6,h:0.6,fontSize:24,italic:true,color:P.cream,fontFace:"Georgia",margin:0});
+      s.addText([{text:"Prepared for ",options:{color:P.cream}},{text:m.forLine.client,options:{bold:true,color:"FFFFFF"}},{text:"  •  "+m.forLine.audience+"  •  "+m.forLine.length,options:{color:P.cream}}],{x:0.7,y:3.5,w:8.4,h:0.42,fontSize:14,valign:"middle",margin:0});
+      s.addText(m.meta,{x:0.7,y:4.85,w:6,h:0.3,fontSize:11,color:"9DB0CC",margin:0});
+    }
+    else if(m.type==="bullets"){ s.background={color:P.cream}; band(s); head(s,m.title,m.intro);
+      s.addText(m.bullets.map(b=>({text:b,options:{bullet:{indent:14},breakLine:true,paraSpaceAfter:9}})),
+        {x:0.7,y:m.intro?1.75:1.3,w:8.6,h:3.6,fontSize:16,color:P.ink,valign:"top",margin:0});
+    }
+    else if(m.type==="stat"){ s.background={color:P.cream}; band(s); head(s,m.title,m.intro);
+      s.addText(m.paras.map(p=>({text:p,options:{breakLine:true,paraSpaceAfter:10}})),{x:0.7,y:1.8,w:5.2,h:2.2,fontSize:14.5,color:P.ink,valign:"top",margin:0});
+      if(m.note)s.addText(m.note,{x:0.7,y:4.2,w:5.2,h:0.4,fontSize:12.5,italic:true,color:"4F7A3A",margin:0});
+      m.stats.forEach((st,i)=>{const y=1.45+i*1.4;
+        s.addShape(pres.shapes.RECTANGLE,{x:6.35,y,w:3.0,h:1.05,fill:{color:"FFFFFF"},line:{color:"E5E0D3",width:1},shadow:SH()});
+        s.addShape(pres.shapes.RECTANGLE,{x:6.35,y,w:0.09,h:1.05,fill:{color:P.moss}});
+        s.addText(st.v,{x:6.58,y:y+0.06,w:1.72,h:0.93,fontSize:30,bold:true,color:P.navy,fontFace:"Georgia",valign:"middle",margin:0});
+        s.addText(st.l,{x:8.3,y:y+0.06,w:1.0,h:0.93,fontSize:11,color:P.mute,valign:"middle",margin:0}); });
+    }
+    else if(m.type==="points"){ s.background={color:P.cream}; band(s); head(s,m.title,m.intro);
+      m.points.slice(0,4).forEach((p,i)=>{ const x=0.7+(i%2)*4.45, y=1.85+Math.floor(i/2)*1.45;
+        s.addShape(pres.shapes.RECTANGLE,{x,y,w:4.15,h:1.25,fill:{color:"FFFFFF"},line:{color:"E5E0D3",width:1},shadow:SH()});
+        s.addShape(pres.shapes.RECTANGLE,{x,y,w:0.09,h:1.25,fill:{color:P.moss}});
+        s.addText(p.t,{x:x+0.25,y:y+0.12,w:3.8,h:0.4,fontSize:16,bold:true,color:P.navy,fontFace:"Georgia",margin:0});
+        s.addText(p.d,{x:x+0.25,y:y+0.55,w:3.8,h:0.62,fontSize:12,color:P.mute,valign:"top",margin:0}); });
+    }
+    else if(m.type==="steps"){ s.background={color:P.cream}; band(s); head(s,m.title,m.intro);
+      m.items.slice(0,4).forEach((it,i)=>{const x=0.68+i*2.24;
+        s.addShape(pres.shapes.RECTANGLE,{x,y:1.75,w:1.93,h:2.85,fill:{color:"FFFFFF"},line:{color:"E5E0D3",width:1},shadow:SH()});
+        s.addShape(pres.shapes.RECTANGLE,{x,y:1.75,w:1.93,h:0.12,fill:{color:P.moss}});
+        s.addShape(pres.shapes.OVAL,{x:x+0.63,y:2.1,w:0.67,h:0.67,fill:{color:P.navy}});
+        s.addText(it.n,{x:x+0.63,y:2.1,w:0.67,h:0.67,align:"center",valign:"middle",fontSize:20,bold:true,color:"FFFFFF",fontFace:"Georgia",margin:0});
+        s.addText("STEP "+it.n,{x,y:2.95,w:1.93,h:0.3,align:"center",fontSize:10,bold:true,color:"4F7A3A",charSpacing:2,margin:0});
+        s.addText(it.t,{x,y:3.23,w:1.93,h:0.42,align:"center",fontSize:19,bold:true,color:P.navy,fontFace:"Georgia",margin:0});
+        s.addText(it.d,{x:x+0.1,y:3.66,w:1.73,h:0.85,align:"center",fontSize:11,color:P.mute,valign:"top",margin:0}); });
+      if(m.tip)s.addText(m.tip,{x:0.7,y:4.85,w:8.6,h:0.35,fontSize:12,italic:true,color:"4F7A3A",align:"center",margin:0});
+    }
+    else if(m.type==="twocol"){ s.background={color:P.cream}; band(s); head(s,m.title,m.intro);
+      const col=(x,title,items,color)=>{ s.addShape(pres.shapes.RECTANGLE,{x,y:1.85,w:4.15,h:0.62,fill:{color}});
+        s.addText(title,{x,y:1.85,w:4.15,h:0.62,align:"center",valign:"middle",fontSize:16,bold:true,color:"FFFFFF",fontFace:"Georgia",margin:0});
+        s.addShape(pres.shapes.RECTANGLE,{x,y:2.47,w:4.15,h:2.3,fill:{color:"FFFFFF"},line:{color:"E5E0D3",width:1}});
+        s.addText(items.map(t=>({text:t,options:{bullet:{indent:12},breakLine:true,paraSpaceAfter:7}})),{x:x+0.2,y:2.6,w:3.8,h:2.05,fontSize:12.5,color:P.ink,valign:"top",margin:0}); };
+      col(0.7,m.leftTitle,m.left,m.leftColor); col(5.15,m.rightTitle,m.right,m.rightColor);
+    }
+    else if(m.type==="signals"){ s.background={color:P.cream}; band(s); head(s,m.title,m.intro);
+      m.stages.forEach((st,i)=>{const x=0.68+i*2.235;
+        s.addShape(pres.shapes.RECTANGLE,{x,y:1.8,w:1.95,h:0.62,fill:{color:st.color}});
+        s.addText(st.name,{x,y:1.8,w:1.95,h:0.62,align:"center",valign:"middle",fontSize:16,bold:true,color:"FFFFFF",fontFace:"Georgia",margin:0});
+        s.addShape(pres.shapes.RECTANGLE,{x,y:2.42,w:1.95,h:1.85,fill:{color:"FFFFFF"},line:{color:"E5E0D3",width:1}});
+        s.addText(st.desc,{x:x+0.12,y:2.55,w:1.71,h:1.6,fontSize:11.5,color:P.ink,valign:"top",margin:0}); });
+      if(m.note)s.addText(m.note,{x:0.7,y:4.55,w:8.6,h:0.4,fontSize:12,italic:true,color:"4F7A3A",align:"center",margin:0});
+    }
+    else if(m.type==="scenario"){ s.background={color:P.cream}; band(s); head(s,m.title,m.intro);
+      s.addShape(pres.shapes.RECTANGLE,{x:0.7,y:1.75,w:4.5,h:3.0,fill:{color:P.navy},shadow:SH()});
+      s.addText("THE SITUATION",{x:1.0,y:2.05,w:3.9,h:0.34,fontSize:11,bold:true,color:P.moss,charSpacing:2,margin:0});
+      s.addText(m.situation,{x:1.0,y:2.5,w:3.9,h:2.1,fontSize:13,color:P.cream,valign:"top",margin:0});
+      s.addText(m.questionsTitle,{x:5.6,y:1.75,w:3.8,h:0.4,fontSize:15,bold:true,color:P.navy,margin:0});
+      s.addText(m.questions.map(q=>({text:q,options:{bullet:{indent:12},breakLine:true,paraSpaceAfter:10}})),{x:5.6,y:2.2,w:3.75,h:2.6,fontSize:13.5,color:P.ink,valign:"top",margin:0});
+    }
+    else if(m.type==="closing"){ s.background={color:P.navy}; band(s);
+      s.addText(m.big,{x:0.7,y:0.75,w:8.6,h:0.7,fontSize:32,bold:true,color:"FFFFFF",fontFace:"Georgia",margin:0});
+      s.addText(m.sub,{x:0.7,y:1.45,w:8.6,h:0.5,fontSize:18,italic:true,color:P.cream,fontFace:"Georgia",margin:0});
+      s.addShape(pres.shapes.RECTANGLE,{x:0.7,y:2.3,w:4.3,h:2.5,fill:{color:P.navy2}});
+      s.addText("THE INPUTS",{x:1.0,y:2.57,w:3.2,h:0.34,fontSize:11,bold:true,color:P.moss,charSpacing:2,margin:0});
+      s.addText(m.inputs.map(i=>({text:i,options:{bullet:{indent:12},breakLine:true,paraSpaceAfter:6}})),{x:1.0,y:3.05,w:3.7,h:1.6,fontSize:12.5,color:P.cream,valign:"top",margin:0});
+      s.addShape(pres.shapes.RECTANGLE,{x:5.4,y:2.3,w:3.95,h:2.5,fill:{color:P.navy2}});
+      s.addText("THE PAYOFF",{x:5.7,y:2.57,w:3.0,h:0.34,fontSize:11,bold:true,color:P.moss,charSpacing:2,margin:0});
+      s.addText(m.payoffBig,{x:5.7,y:3.0,w:3.4,h:0.65,fontSize:34,bold:true,color:"FFFFFF",fontFace:"Georgia",margin:0});
+      s.addText(m.payoffSub,{x:5.7,y:3.68,w:3.4,h:0.45,fontSize:18,italic:true,color:P.cream,fontFace:"Georgia",margin:0});
+      s.addText(m.payoffNote,{x:5.7,y:4.22,w:3.4,h:0.55,fontSize:12,color:"D4DEEE",valign:"top",margin:0});
+      s.addText(m.footer,{x:0.7,y:5.15,w:8.6,h:0.3,fontSize:10.5,color:"C2CFE3",align:"center",margin:0});
+    }
+  });
+  const safe=(ctx.client||"deck").replace(/[^a-z0-9]+/gi,"_");
+  pres.writeFile({fileName:"TrailPath_"+safe+"_Coaching_Deck.pptx"}).then(()=>toast("PowerPoint downloaded ✓"));
+}
+
+/* =====================================================================
+   .PPTX IMPORT (text extraction with JSZip)
+   ===================================================================== */
+async function importPptx(file){
+  if(typeof JSZip==="undefined"){toast("Importer still loading — try again in a second.");return;}
+  try{
+    toast("Reading "+file.name+"…");
+    const zip=await JSZip.loadAsync(file);
+    const names=Object.keys(zip.files).filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n))
+      .sort((a,b)=>(+a.match(/slide(\d+)/)[1])-(+b.match(/slide(\d+)/)[1]));
+    if(!names.length){toast("No slides found in that file.");return;}
+    const slides=[];
+    for(const n of names){
+      const xml=await zip.files[n].async("string");
+      const doc=new DOMParser().parseFromString(xml,"application/xml");
+      const paras=[...doc.getElementsByTagName("a:p")].map(p=>
+        [...p.getElementsByTagName("a:t")].map(t=>t.textContent).join("").trim()).filter(Boolean);
+      if(!paras.length) continue;
+      slides.push({title:paras[0].slice(0,90), bullets:paras.slice(1,8).map(x=>x.slice(0,160))});
+    }
+    if(!slides.length){toast("Those slides had no readable text.");return;}
+    content.imported=slides; modState.imported=true;
+    document.getElementById("contentJson").value=JSON.stringify(content,null,2);
+    renderModuleList(); refresh();
+    toast("Imported "+slides.length+" slides → see the “Imported slides” module ✓");
+  }catch(e){ console.error(e); toast("Couldn’t read that .pptx — is it a valid PowerPoint file?"); }
+}
+
+/* =====================================================================
+   AI REWRITE (team version) — calls a secure Netlify Function that holds
+   the Anthropic key server-side (env var ANTHROPIC_API_KEY). The browser
+   never sees the key. See netlify/functions/rewrite.js.
+   ===================================================================== */
+async function runAIRewrite(){
+  const btn=document.getElementById("aiRun"); const old=btn.textContent;
+  btn.disabled=true; btn.textContent="✨ Rewriting…";
+  const editable={ deckTitle:content.deckTitle, deckSubtitle:content.deckSubtitle,
+    objectives:content.objectives, why:content.why, listening:content.listening, steps:content.steps,
+    difficult:content.difficult, signals:content.signals, recognition:content.recognition,
+    scenario:content.scenario, scenarios:content.scenarios, closing:content.closing };
+  try{
+    const res=await fetch("/.netlify/functions/rewrite",{
+      method:"POST", headers:{"content-type":"application/json"},
+      body:JSON.stringify({ ctx:{client:ctx.client,industry:ctx.industry,project:ctx.project,audience:ctx.audience}, content:editable, model:aiModel })
+    });
+    const data=await res.json().catch(()=>null);
+    if(!res.ok){ throw new Error((data&&data.error)||("HTTP "+res.status)); }
+    if(!data||!data.content) throw new Error((data&&data.error)||"No content returned");
+    content=deepMerge(content,data.content);
+    document.getElementById("contentJson").value=JSON.stringify(content,null,2);
+    refresh(); toast("AI rewrote the deck for "+ctx.client+" ✓");
+  }catch(e){ console.error(e); toast("AI rewrite failed: "+e.message); }
+  finally{ btn.disabled=false; btn.textContent=old; }
+}
+
+/* UI */
+function refresh(){ deck=buildDeck(); if(idx>=deck.length)idx=deck.length-1; if(idx<0)idx=0; paint(); save(); }
+function paint(){
+  document.getElementById("canvas").innerHTML=renderHTML(deck[idx]);
+  document.getElementById("pos").textContent=(idx+1)+" / "+deck.length;
+  document.getElementById("counter").textContent=deck.length+" slides";
+  const t=document.getElementById("thumbs"); t.innerHTML="";
+  deck.forEach((m,i)=>{const b=document.createElement("button");
+    b.className="thumb"+(i===idx?" active":""); b.textContent=(i+1)+". "+thumbLabel(m,i);
+    b.onclick=()=>{idx=i;paint();}; t.appendChild(b);});
+}
+function thumbLabel(m){return {title:"Title",bullets:"Slide",stat:"Why",points:"Points",steps:"Steps",twocol:"Two-col",signals:"Signals",scenario:"Scenario",closing:"Close"}[m.type]||m.type;}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("show"),2600);}
+
+function renderModuleList(){
+  const ml=document.getElementById("modList"); ml.innerHTML="";
+  MODULES.forEach(m=>{
+    if(m.id==="imported" && !(Array.isArray(content.imported)&&content.imported.length)) return;
+    const row=document.createElement("label"); row.className="mod"+(m.id==="imported"?" imp":"");
+    const cnt=(m.id==="imported")?` (${content.imported.length})`:"";
+    row.innerHTML=`<input type="checkbox" ${modState[m.id]?"checked":""}/><div><div class="t">${m.title}${cnt}</div><div class="d">${m.desc}</div></div>`;
+    const cb=row.querySelector("input");
+    cb.addEventListener("change",()=>{modState[m.id]=cb.checked;refresh();});
+    ml.appendChild(row);
+  });
+}
+
+function initInputs(){
+  const ind=document.getElementById("v_industry");
+  Object.keys(DEFAULT_CONTENT.scenarios).forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=k;ind.appendChild(o);});
+  const map={v_client:"client",v_industry:"industry",v_project:"project",v_audience:"audience",v_length:"length",v_facilitator:"facilitator",v_date:"date"};
+  Object.entries(map).forEach(([id,key])=>{const el=document.getElementById(id);el.value=ctx[key];
+    el.addEventListener("input",()=>{ctx[key]=el.value; if(key==="client")document.getElementById("aiClientName").textContent=el.value||"the client"; refresh();});});
+  document.getElementById("aiClientName").textContent=ctx.client||"the client";
+  renderModuleList();
+  document.getElementById("contentJson").value=JSON.stringify(content,null,2);
+  // AI fields handled by the secure server function — nothing to wire here.
+}
+
+function wire(){
+  document.getElementById("applyJson").onclick=()=>{ try{const obj=JSON.parse(document.getElementById("contentJson").value);
+    content=deepMerge(DEFAULT_CONTENT,obj); renderModuleList(); refresh(); toast("Content applied ✓"); }
+    catch(e){ toast("Invalid JSON — check the syntax"); } };
+  document.getElementById("exportJson").onclick=()=>{ const blob=new Blob([JSON.stringify(content,null,2)],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="trailpath_content.json"; a.click(); };
+  document.getElementById("resetJson").onclick=()=>{ content=clone(DEFAULT_CONTENT); modState.imported=false;
+    document.getElementById("contentJson").value=JSON.stringify(content,null,2); renderModuleList(); refresh(); toast("Reset to sample content"); };
+  document.getElementById("pptxUp").addEventListener("change",e=>{ if(e.target.files[0]) importPptx(e.target.files[0]); e.target.value=""; });
+  document.getElementById("aiRun").onclick=runAIRewrite;
+  document.getElementById("prev").onclick=()=>{if(idx>0){idx--;paint();}};
+  document.getElementById("next").onclick=()=>{if(idx<deck.length-1){idx++;paint();}};
+  document.addEventListener("keydown",e=>{ if(e.target.tagName==="INPUT"||e.target.tagName==="TEXTAREA")return;
+    if(e.key==="ArrowLeft")document.getElementById("prev").click(); if(e.key==="ArrowRight")document.getElementById("next").click(); });
+  document.getElementById("btnPptx").onclick=exportPPTX;
+  document.getElementById("btnPrint").onclick=()=>{ document.getElementById("printRoot").innerHTML=buildDeck().map(m=>`<div class="pslide">${renderHTML(m)}</div>`).join(""); window.print(); };
+}
+
+/* floating tooltips (avoid scroll-clipping) */
+function wireTips(){
+  const box=document.getElementById("tipbox");
+  document.addEventListener("mouseover",e=>{ const h=e.target.closest&&e.target.closest(".help"); if(!h)return;
+    box.innerHTML=h.getAttribute("data-tip"); box.classList.add("show");
+    const r=h.getBoundingClientRect(); let left=r.right+10, top=r.top-4;
+    box.style.left="0px"; box.style.top="0px"; const bw=box.offsetWidth, bh=box.offsetHeight;
+    if(left+bw>window.innerWidth-10) left=r.left-bw-10; if(left<8)left=8;
+    if(top+bh>window.innerHeight-10) top=window.innerHeight-bh-10; if(top<8)top=8;
+    box.style.left=left+"px"; box.style.top=top+"px"; });
+  document.addEventListener("mouseout",e=>{ if(e.target.closest&&e.target.closest(".help")) box.classList.remove("show"); });
+}
+
+/* boot */
+loadState(); initInputs(); wire(); wireTips(); refresh();
+</script>
+</body>
+</html>
