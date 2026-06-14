@@ -18,7 +18,7 @@ const SYSTEM_PROMPT =
   "the extra instruction if one is given). RULES: (1) Return ONLY a single valid JSON object with the " +
   "EXACT same keys and structure as the input — no markdown, no commentary. (2) Keep every " +
   "{{placeholder}} token intact. (3) Keep array lengths the same. (4) Keep it concise and professional. " +
-  "(5) Do not invent statistics.";
+  "(5) Do not invent statistics. Begin your reply with { and end with } — output the JSON object only.";
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return resp(405, { error: "Method not allowed" });
@@ -42,10 +42,7 @@ exports.handler = async (event) => {
     (instruction ? "\n\nEXTRA INSTRUCTION FROM THE USER (follow it): " + instruction : "") +
     "\n\nDECK CONTENT TO REWRITE:\n" + JSON.stringify(content);
 
-  const messages = [
-    { role: "user", content: user },
-    { role: "assistant", content: "{" }, // prefill forces a pure-JSON reply
-  ];
+  const messages = [{ role: "user", content: user }];
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -62,7 +59,6 @@ exports.handler = async (event) => {
     if (!res.ok) return resp(res.status, { error: (data.error && data.error.message) || "Anthropic API error" });
 
     let text = (data.content || []).map((b) => b.text || "").join("");
-    if (!text.trimStart().startsWith("{")) text = "{" + text;
     const a = text.indexOf("{"), z = text.lastIndexOf("}");
     if (a < 0 || z < 0) return resp(502, { error: "Model did not return JSON" });
 
