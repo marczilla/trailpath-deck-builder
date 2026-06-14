@@ -1,26 +1,27 @@
 /* =====================================================================
-   Secure Claude proxy for the Coaching Deck Builder.
+   Secure Claude proxy for the Coaching Deck Builder (hybrid rewrite).
    The Anthropic API key is read from the environment, never sent to the
-   browser. Set it in Netlify:  Site settings → Environment variables →
-   ANTHROPIC_API_KEY.
+   browser. Set it in Netlify: Site settings → Environment variables →
+   ANTHROPIC_API_KEY. Optional: SITE_PASSWORD to gate access.
    Runtime: Netlify Functions (Node 18+, global fetch available).
+
+   Body: { auth?, password?, ctx, content, instruction?, model }
+   Returns: { content: object }   (rewritten deck fields to merge)
    ===================================================================== */
 const DEFAULT_MODEL = "claude-haiku-4-5";
 const SITE_PASSWORD = process.env.SITE_PASSWORD || "";
 
 const SYSTEM_PROMPT =
-  "You localize coaching/training-deck copy for a specific client. You will " +
-  "receive a JSON object of deck content and a client context. Rewrite the " +
-  "human-readable TEXT VALUES so the examples, scenarios and tone fit the " +
-  "client's company and industry. RULES: (1) Return ONLY a single valid JSON " +
-  "object with the EXACT same keys and structure as the input — no markdown, " +
-  "no commentary. (2) Keep every {{placeholder}} token intact. (3) Keep array " +
-  "lengths the same. (4) Keep it concise and professional. (5) Do not invent statistics.";
+  "You localize coaching/training-deck copy for a specific client. You receive a JSON object of " +
+  "deck content, a client context, and optionally an extra instruction. Rewrite the human-readable " +
+  "TEXT VALUES so the examples, scenarios and tone fit the client's company and industry (and follow " +
+  "the extra instruction if one is given). RULES: (1) Return ONLY a single valid JSON object with the " +
+  "EXACT same keys and structure as the input — no markdown, no commentary. (2) Keep every " +
+  "{{placeholder}} token intact. (3) Keep array lengths the same. (4) Keep it concise and professional. " +
+  "(5) Do not invent statistics.";
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return resp(405, { error: "Method not allowed" });
-  }
+  if (event.httpMethod !== "POST") return resp(405, { error: "Method not allowed" });
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return resp(500, { error: "Server is missing ANTHROPIC_API_KEY" });
 
@@ -34,10 +35,17 @@ exports.handler = async (event) => {
   const ctx = body.ctx || {};
   const content = body.content || {};
   const model = body.model || DEFAULT_MODEL;
+  const instruction = (body.instruction || "").toString().slice(0, 500).trim();
 
   const user =
     "CLIENT CONTEXT:\n" + JSON.stringify(ctx) +
+    (instruction ? "\n\nEXTRA INSTRUCTION FROM THE USER (follow it): " + instruction : "") +
     "\n\nDECK CONTENT TO REWRITE:\n" + JSON.stringify(content);
+
+  const messages = [
+    { role: "user", content: user },
+    { role: "assistant", content: "{" }, // prefill forces a pure-JSON reply
+  ];
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -47,20 +55,14 @@ exports.handler = async (event) => {
         "x-api-key": key,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify({
-        model,
-        max_tokens: 2048,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: user }],
-      }),
+      body: JSON.stringify({ model, max_tokens: 2048, system: SYSTEM_PROMPT, messages }),
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      return resp(res.status, { error: (data.error && data.error.message) || "Anthropic API error" });
-    }
+    if (!res.ok) return resp(res.status, { error: (data.error && data.error.message) || "Anthropic API error" });
 
-    const text = (data.content || []).map((b) => b.text || "").join("");
+    let text = (data.content || []).map((b) => b.text || "").join("");
+    if (!text.trimStart().startsWith("{")) text = "{" + text;
     const a = text.indexOf("{"), z = text.lastIndexOf("}");
     if (a < 0 || z < 0) return resp(502, { error: "Model did not return JSON" });
 
