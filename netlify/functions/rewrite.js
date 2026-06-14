@@ -52,7 +52,7 @@ exports.handler = async (event) => {
         "x-api-key": key,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify({ model, max_tokens: 2048, system: SYSTEM_PROMPT, messages }),
+      body: JSON.stringify({ model, max_tokens: 3072, system: SYSTEM_PROMPT, messages }),
     });
 
     const data = await res.json();
