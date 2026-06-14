@@ -226,6 +226,8 @@
 
     <div class="group">
       <h2>AI rewrite<span class="badge">LIVE</span><i class="help" data-tip="Uses Claude to rewrite every example and scenario in the client's industry and voice. The API key is held securely on the server — your team just clicks."></i></h2>
+      <label class="f">Optional instruction<i class="help" data-tip="Steer the rewrite — e.g. ‘emphasize forklift safety’, ‘warmer tone’, ‘shorter sentences’. Leave blank for a straight client + industry tailoring."></i></label>
+      <input type="text" id="aiInstruction" placeholder="e.g. emphasize safety (optional)" />
       <button class="aibtn" id="aiRun">✨ Rewrite examples for this client</button>
       <p class="hint">Rewrites scenarios and examples to fit <b id="aiClientName">the client</b> + industry, keeping the structure and <code>{{placeholders}}</code> intact. Powered by a secure server function — no key needed here.</p>
     </div>
@@ -611,13 +613,15 @@ async function importPptx(file){
 async function runAIRewrite(){
   const btn=document.getElementById("aiRun"); const old=btn.textContent;
   btn.disabled=true; btn.textContent="✨ Rewriting…";
-  const editable={ objectives:content.objectives, why:content.why, listening:content.listening,
-    difficult:content.difficult, recognition:content.recognition,
-    scenario:content.scenario, scenarios:content.scenarios };
+  const editable={ objectives:{bullets:content.objectives.bullets},
+    why:{intro:content.why.intro,paras:content.why.paras},
+    scenario:{questions:content.scenario.questions},
+    scenarios:content.scenarios };
+  const instruction=((document.getElementById("aiInstruction")||{}).value||"");
   try{
     const res=await fetch("/.netlify/functions/rewrite",{
       method:"POST", headers:{"content-type":"application/json"},
-      body:JSON.stringify({ ctx:{client:ctx.client,industry:ctx.industry,project:ctx.project,audience:ctx.audience}, content:editable, model:aiModel, password:(sessionStorage.getItem("tp_sitepw")||"") })
+      body:JSON.stringify({ ctx:{client:ctx.client,industry:ctx.industry,project:ctx.project,audience:ctx.audience}, content:editable, instruction:instruction, model:aiModel, password:(sessionStorage.getItem("tp_sitepw")||"") })
     });
     const data=await res.json().catch(()=>null);
     if(!res.ok){ throw new Error((data&&data.error)||("HTTP "+res.status)); }
