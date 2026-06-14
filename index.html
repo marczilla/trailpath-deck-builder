@@ -617,7 +617,7 @@ async function runAIRewrite(){
   const editable={ objectives:{bullets:content.objectives.bullets},
     why:{intro:content.why.intro,paras:content.why.paras},
     scenario:{questions:content.scenario.questions},
-    scenarios:{[_ind]:content.scenarios[_ind]} };
+    scenarioSituation:content.scenarios[_ind] };
   const instruction=((document.getElementById("aiInstruction")||{}).value||"");
   try{
     const res=await fetch("/.netlify/functions/rewrite",{
@@ -627,7 +627,9 @@ async function runAIRewrite(){
     const data=await res.json().catch(()=>null);
     if(!res.ok){ throw new Error((data&&data.error)||("HTTP "+res.status)); }
     if(!data||!data.content) throw new Error((data&&data.error)||"No content returned");
-    content=deepMerge(content,data.content);
+    const upd=data.content; const _sit=upd.scenarioSituation; delete upd.scenarioSituation;
+    content=deepMerge(content,upd);
+    if(_sit && content.scenarios) content.scenarios[_ind]=_sit;
     document.getElementById("contentJson").value=JSON.stringify(content,null,2);
     refresh(); toast("AI rewrote the deck for "+ctx.client+" ✓");
   }catch(e){ console.error(e); toast("AI rewrite failed: "+e.message); }
