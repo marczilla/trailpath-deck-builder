@@ -25,7 +25,7 @@ const TOOLS = [{
       objectives: { type: "object" },
       why: { type: "object" },
       scenario: { type: "object" },
-      scenarios: { type: "object" },
+      scenarioSituation: { type: "string" },
     },
     additionalProperties: true,
   },
