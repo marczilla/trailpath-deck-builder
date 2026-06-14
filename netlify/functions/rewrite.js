@@ -1,24 +1,35 @@
 /* =====================================================================
    Secure Claude proxy for the Coaching Deck Builder (hybrid rewrite).
-   The Anthropic API key is read from the environment, never sent to the
-   browser. Set it in Netlify: Site settings → Environment variables →
-   ANTHROPIC_API_KEY. Optional: SITE_PASSWORD to gate access.
+   Uses Anthropic tool-use so the model's output is ALWAYS valid JSON.
+   Key is read from env (never sent to the browser). Optional SITE_PASSWORD.
    Runtime: Netlify Functions (Node 18+, global fetch available).
-
    Body: { auth?, password?, ctx, content, instruction?, model }
-   Returns: { content: object }   (rewritten deck fields to merge)
+   Returns: { content: object }
    ===================================================================== */
 const DEFAULT_MODEL = "claude-haiku-4-5";
 const SITE_PASSWORD = process.env.SITE_PASSWORD || "";
 
 const SYSTEM_PROMPT =
-  "You localize coaching/training-deck copy for a specific client. You receive a JSON object of " +
-  "deck content, a client context, and optionally an extra instruction. Rewrite the human-readable " +
-  "TEXT VALUES so the examples, scenarios and tone fit the client's company and industry (and follow " +
-  "the extra instruction if one is given). RULES: (1) Return ONLY a single valid JSON object with the " +
-  "EXACT same keys and structure as the input — no markdown, no commentary. (2) Keep every " +
-  "{{placeholder}} token intact. (3) Keep array lengths the same. (4) Keep it concise and professional. " +
-  "(5) Do not invent statistics. Begin your reply with { and end with } — output the JSON object only.";
+  "You localize coaching/training-deck copy for a specific client. Rewrite the human-readable text " +
+  "values in the provided deck content so the examples, scenarios and tone fit the client's company " +
+  "and industry, and follow any extra instruction the user gives. Keep array lengths the same, keep " +
+  "every {{placeholder}} token intact, be concise and professional, and do not invent statistics. " +
+  "Return your result by calling the apply_rewrite tool, mirroring the exact structure of the deck content.";
+
+const TOOLS = [{
+  name: "apply_rewrite",
+  description: "Return the rewritten deck fields, mirroring the structure of the provided deck content.",
+  input_schema: {
+    type: "object",
+    properties: {
+      objectives: { type: "object" },
+      why: { type: "object" },
+      scenario: { type: "object" },
+      scenarios: { type: "object" },
+    },
+    additionalProperties: true,
+  },
+}];
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") return resp(405, { error: "Method not allowed" });
@@ -42,8 +53,6 @@ exports.handler = async (event) => {
     (instruction ? "\n\nEXTRA INSTRUCTION FROM THE USER (follow it): " + instruction : "") +
     "\n\nDECK CONTENT TO REWRITE:\n" + JSON.stringify(content);
 
-  const messages = [{ role: "user", content: user }];
-
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -52,21 +61,24 @@ exports.handler = async (event) => {
         "x-api-key": key,
         "anthropic-version": "2023-06-01",
       },
-      body: JSON.stringify({ model, max_tokens: 3072, system: SYSTEM_PROMPT, messages }),
+      body: JSON.stringify({
+        model,
+        max_tokens: 2048,
+        system: SYSTEM_PROMPT,
+        tools: TOOLS,
+        tool_choice: { type: "tool", name: "apply_rewrite" },
+        messages: [{ role: "user", content: user }],
+      }),
     });
 
     const data = await res.json();
     if (!res.ok) return resp(res.status, { error: (data.error && data.error.message) || "Anthropic API error" });
 
-    let text = (data.content || []).map((b) => b.text || "").join("");
-    const a = text.indexOf("{"), z = text.lastIndexOf("}");
-    if (a < 0 || z < 0) return resp(502, { error: "Model did not return JSON" });
-
-    let parsed;
-    try { parsed = JSON.parse(text.slice(a, z + 1)); }
-    catch { return resp(502, { error: "Model returned invalid JSON" }); }
-
-    return resp(200, { content: parsed });
+    const block = (data.content || []).find((b) => b.type === "tool_use");
+    if (!block || !block.input || typeof block.input !== "object") {
+      return resp(502, { error: "Model did not return structured output" });
+    }
+    return resp(200, { content: block.input });
   } catch (e) {
     return resp(500, { error: String((e && e.message) || e) });
   }
