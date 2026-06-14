@@ -149,6 +149,14 @@
   .closing .foot{position:absolute;left:7%;right:5%;bottom:4%;text-align:center;color:#C2CFE3;font-size:1.45em}
   .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 18px;border-radius:9px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:80vw;text-align:center}
   .toast.show{opacity:1}
+  @media (max-width:760px){
+    .app{display:flex;flex-direction:column;height:auto}
+    .main{order:-1}
+    .side{width:auto;border-right:none;border-top:1px solid var(--line);overflow:visible;padding:16px 16px 40px}
+    .bar{position:sticky;top:0}
+    .stage{padding:14px}
+    .canvaswrap{max-width:100%}
+  }
   @media print{
     @page{size:landscape;margin:0}
     .side,.bar,.nav,.thumbs{display:none!important}
