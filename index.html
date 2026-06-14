@@ -613,10 +613,11 @@ async function importPptx(file){
 async function runAIRewrite(){
   const btn=document.getElementById("aiRun"); const old=btn.textContent;
   btn.disabled=true; btn.textContent="✨ Rewriting…";
+  const _ind=(content.scenarios&&content.scenarios[ctx.industry])?ctx.industry:"Custom";
   const editable={ objectives:{bullets:content.objectives.bullets},
     why:{intro:content.why.intro,paras:content.why.paras},
     scenario:{questions:content.scenario.questions},
-    scenarios:content.scenarios };
+    scenarios:{[_ind]:content.scenarios[_ind]} };
   const instruction=((document.getElementById("aiInstruction")||{}).value||"");
   try{
     const res=await fetch("/.netlify/functions/rewrite",{
